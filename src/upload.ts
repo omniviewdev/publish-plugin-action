@@ -17,20 +17,34 @@ export async function uploadArtifacts(
     const stat = fs.statSync(filePath);
     const body = fs.readFileSync(filePath);
 
-    console.log(`Uploading ${filename} (${(stat.size / 1024).toFixed(1)} KB) for ${arch}...`);
+    // Log the URL host (not the full signed URL which contains secrets)
+    let urlHost: string;
+    try {
+      urlHost = new URL(url).host;
+    } catch {
+      throw new Error(`Invalid upload URL for ${arch}: ${url}`);
+    }
 
-    const res = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/gzip',
-        'Content-Length': String(stat.size),
-      },
-      body,
-    });
+    console.log(`Uploading ${filename} (${(stat.size / 1024).toFixed(1)} KB) for ${arch} to ${urlHost}...`);
+
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/gzip',
+          'Content-Length': String(stat.size),
+        },
+        body,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      throw new Error(`Upload fetch failed for ${arch} (host: ${urlHost}): ${msg}`);
+    }
 
     if (!res.ok) {
       const text = await res.text().catch(() => '');
-      throw new Error(`Upload failed for ${arch}: ${res.status} ${text}`);
+      throw new Error(`Upload failed for ${arch}: HTTP ${res.status} ${res.statusText} — ${text}`);
     }
 
     console.log(`  Uploaded ${arch} successfully`);

@@ -24,6 +24,11 @@ async function run(): Promise<void> {
       throw new Error('At least one architecture must be specified');
     }
 
+    core.info(`API URL: ${apiUrl}`);
+    core.info(`Publisher: ${publisherSlug}, Plugin: ${pluginId}, Version: ${version}`);
+    core.info(`Architectures: ${architectures.join(', ')}`);
+    core.info(`Artifact path: ${artifactPath}`);
+
     const api = new MarketplaceAPI(apiUrl, apiKey);
 
     // Step 1: Create submission
@@ -36,6 +41,15 @@ async function run(): Promise<void> {
     // Step 2: Generate upload URLs
     core.info(`Generating upload URLs for ${architectures.join(', ')}...`);
     const { urls } = await api.generateUploadUrls(submissionId, architectures);
+    // Log URL hosts for debugging (not the full signed URLs)
+    for (const [arch, url] of Object.entries(urls)) {
+      try {
+        const parsed = new URL(url);
+        core.info(`  ${arch}: ${parsed.protocol}//${parsed.host}${parsed.pathname.substring(0, 50)}...`);
+      } catch {
+        core.warning(`  ${arch}: invalid URL returned`);
+      }
+    }
 
     // Step 3: Upload artifacts
     core.info('Uploading artifacts...');
