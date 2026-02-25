@@ -1,0 +1,38 @@
+name: 'Publish to Omniview Marketplace'
+description: 'Build, upload, and submit a plugin version to the Omniview Marketplace'
+inputs:
+  api-key:
+    description: 'Omniview API key (omni_pk_...)'
+    required: true
+  api-url:
+    description: 'Marketplace API URL'
+    default: 'https://api.omniview.dev'
+  publisher-slug:
+    description: 'Publisher slug'
+    required: true
+  plugin-id:
+    description: 'Plugin ID'
+    required: true
+  version:
+    description: 'Semver version (e.g., 1.2.3)'
+    required: true
+  artifact-path:
+    description: 'Path to directory containing built artifacts'
+    required: true
+  architectures:
+    description: 'Comma-separated architectures (e.g., darwin_arm64,linux_amd64)'
+    required: true
+  wait-for-approval:
+    description: 'Poll until submission is approved/rejected'
+    default: 'false'
+  poll-timeout:
+    description: 'Max seconds to wait for approval'
+    default: '600'
+outputs:
+  submission-id:
+    description: 'Created submission ID'
+  status:
+    description: 'Final submission status'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
