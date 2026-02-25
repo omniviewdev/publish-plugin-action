@@ -71,17 +71,26 @@ jobs:
         with:
           version: ${{ inputs.pnpm-version }}
 
+      - name: Resolve UI path
+        if: inputs.ui-path != ''
+        id: ui
+        run: |
+          RAW="${{ inputs.plugin-path }}/${{ inputs.ui-path }}"
+          # Normalize ././ → ./
+          CLEAN=$(echo "$RAW" | sed 's|^\./\./|./|')
+          echo "dir=${CLEAN}" >> "$GITHUB_OUTPUT"
+
       - name: Setup Node.js
         if: inputs.ui-path != ''
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
           cache: pnpm
-          cache-dependency-path: ${{ inputs.plugin-path }}/${{ inputs.ui-path }}/pnpm-lock.yaml
+          cache-dependency-path: ${{ steps.ui.outputs.dir }}/pnpm-lock.yaml
 
       - name: Build UI
         if: inputs.ui-path != ''
-        working-directory: ${{ inputs.plugin-path }}/${{ inputs.ui-path }}
+        working-directory: ${{ steps.ui.outputs.dir }}
         run: |
           pnpm install --frozen-lockfile
           pnpm run build
