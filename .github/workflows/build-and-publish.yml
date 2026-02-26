@@ -101,10 +101,11 @@ jobs:
           VERSION="${{ inputs.version }}"
           echo "clean=${VERSION#v}" >> "$GITHUB_OUTPUT"
 
-      - name: Cross-compile Go binaries
+      - name: Cross-compile Go binaries (parallel)
         working-directory: ${{ inputs.plugin-path }}
         run: |
           IFS=',' read -ra ARCHS <<< "${{ inputs.architectures }}"
+          pids=()
           for target in "${ARCHS[@]}"; do
             os="${target%%_*}"
             arch="${target#*_}"
@@ -119,8 +120,15 @@ jobs:
             GOOS="${os}" GOARCH="${arch}" CGO_ENABLED=0 \
               go build -trimpath -ldflags="-s -w" \
               -o "dist/${target}/bin/plugin${ext}" \
-              ${{ inputs.go-entry }}
+              ${{ inputs.go-entry }} &
+            pids+=($!)
           done
+
+          # Wait for all builds and fail if any errored
+          for pid in "${pids[@]}"; do
+            wait "$pid" || { echo "Build failed (PID $pid)"; exit 1; }
+          done
+          echo "All builds completed"
 
       - name: Package artifacts
         working-directory: ${{ inputs.plugin-path }}
