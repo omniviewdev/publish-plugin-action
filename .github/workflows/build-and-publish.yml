@@ -140,9 +140,9 @@ jobs:
             cp plugin.yaml "dist/${target}/"
 
             # Copy UI build output if it exists
-            if [ -d "${{ inputs.ui-path }}/dist" ]; then
+            if [ -d "${{ inputs.ui-path }}/dist/assets" ]; then
               mkdir -p "dist/${target}/assets"
-              cp -r "${{ inputs.ui-path }}/dist/"* "dist/${target}/assets/"
+              cp -r "${{ inputs.ui-path }}/dist/assets/"* "dist/${target}/assets/"
             fi
 
             # Create tarball
