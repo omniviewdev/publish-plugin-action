@@ -6,7 +6,7 @@ inputs:
     required: true
   api-url:
     description: 'Marketplace API URL'
-    default: 'https://api.omniview.dev'
+    default: 'https://mkt.omniview.dev'
   publisher-slug:
     description: 'Publisher slug'
     required: true

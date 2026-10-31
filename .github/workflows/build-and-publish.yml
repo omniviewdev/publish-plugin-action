@@ -37,7 +37,7 @@ on:
         type: string
       api-url:
         description: 'Marketplace API URL'
-        default: 'https://api.omniview.dev'
+        default: 'https://mkt.omniview.dev'
         type: string
       publisher-slug:
         description: 'Publisher slug'
@@ -46,6 +46,10 @@ on:
       version:
         description: 'Semver version (from tag or input)'
         required: true
+        type: string
+      min-ide-version:
+        description: 'Minimum compatible Omniview version, inclusive (e.g., 0.11.0). Requires marketplace support for min_ide_version; empty preserves legacy behavior.'
+        default: ''
         type: string
     secrets:
       api-key:
@@ -154,12 +158,13 @@ jobs:
           ls -la artifacts/
 
       - name: Submit to Marketplace
-        uses: omniviewdev/publish-plugin-action@v1
+        uses: omniviewdev/publish-plugin-action@71f2826ab358e5e13b05ceb20e87fb5a1d9cf22f
         with:
           api-key: ${{ secrets.api-key }}
           api-url: ${{ inputs.api-url }}
           publisher-slug: ${{ inputs.publisher-slug }}
           plugin-id: ${{ inputs.plugin-id }}
           version: ${{ steps.version.outputs.clean }}
+          min-ide-version: ${{ inputs.min-ide-version }}
           artifact-path: ${{ inputs.plugin-path }}/artifacts
           architectures: ${{ inputs.architectures }}
