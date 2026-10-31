@@ -16,6 +16,9 @@ inputs:
   version:
     description: 'Semver version (e.g., 1.2.3)'
     required: true
+  min-ide-version:
+    description: 'Minimum compatible Omniview version, inclusive (e.g., 0.11.0). Requires a marketplace server that persists and enforces min_ide_version; publishing fails before upload if the server does not confirm it. Empty preserves legacy behavior.'
+    required: false
   artifact-path:
     description: 'Path to directory containing built artifacts'
     required: true

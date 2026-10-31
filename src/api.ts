@@ -30,11 +30,28 @@ export class MarketplaceAPI {
     return ('data' in json ? json.data : json) as T;
   }
 
-  async createSubmission(publisherSlug: string, pluginId: string, version: string): Promise<{ id: string }> {
-    return this.request('POST', `/v1/publishers/${publisherSlug}/submissions`, {
-      plugin_id: pluginId,
-      version,
-    });
+  async createSubmission(
+    publisherSlug: string,
+    pluginId: string,
+    version: string,
+    minIdeVersion?: string
+  ): Promise<{ id: string; min_ide_version?: string }> {
+    const submission = await this.request<{ id: string; min_ide_version?: string }>(
+      'POST',
+      `/v1/publishers/${publisherSlug}/submissions`,
+      {
+        plugin_id: pluginId,
+        version,
+        ...(minIdeVersion ? { min_ide_version: minIdeVersion } : {}),
+      }
+    );
+    if (minIdeVersion && submission.min_ide_version !== minIdeVersion) {
+      throw new Error(
+        'Marketplace did not persist the requested min-ide-version; publishing stopped before artifact upload. ' +
+          'Use a marketplace server that supports min_ide_version.'
+      );
+    }
+    return submission;
   }
 
   async generateUploadUrls(
