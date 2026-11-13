@@ -158,7 +158,7 @@ jobs:
           ls -la artifacts/
 
       - name: Submit to Marketplace
-        uses: omniviewdev/publish-plugin-action@71f2826ab358e5e13b05ceb20e87fb5a1d9cf22f
+        uses: omniviewdev/publish-plugin-action@46937e6bdf076c997b76fb01fc7770c7074d9d9c # v1.3.0
         with:
           api-key: ${{ secrets.api-key }}
           api-url: ${{ inputs.api-url }}
