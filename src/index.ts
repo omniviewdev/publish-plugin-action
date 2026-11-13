@@ -11,6 +11,11 @@ async function run(): Promise<void> {
     const publisherSlug = core.getInput('publisher-slug', { required: true });
     const pluginId = core.getInput('plugin-id', { required: true });
     const version = core.getInput('version', { required: true }).replace(/^v/, '');
+    const channel = core.getInput('channel');
+    if (channel && (!/^feature-[a-z][a-z0-9-]{0,30}[a-z0-9]$/.test(channel) ||
+      !new RegExp(`^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)-${channel}\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$`).test(version))) {
+      throw new Error('invalid channel or version for channel');
+    }
     const minIdeVersion = core.getInput('min-ide-version');
     const artifactPath = core.getInput('artifact-path', { required: true });
     const architectures = core
@@ -34,7 +39,7 @@ async function run(): Promise<void> {
 
     // Step 1: Create submission
     core.info(`Creating submission for ${pluginId}@${version}...`);
-    const submission = await api.createSubmission(publisherSlug, pluginId, version, minIdeVersion);
+    const submission = await api.createSubmission(publisherSlug, pluginId, version, minIdeVersion, channel);
     const submissionId = submission.id;
     core.setOutput('submission-id', submissionId);
     core.info(`  Submission created: ${submissionId}`);

@@ -34,7 +34,8 @@ export class MarketplaceAPI {
     publisherSlug: string,
     pluginId: string,
     version: string,
-    minIdeVersion?: string
+    minIdeVersion?: string,
+    channel?: string
   ): Promise<{ id: string; min_ide_version?: string }> {
     const submission = await this.request<{ id: string; min_ide_version?: string }>(
       'POST',
@@ -43,6 +44,7 @@ export class MarketplaceAPI {
         plugin_id: pluginId,
         version,
         ...(minIdeVersion ? { min_ide_version: minIdeVersion } : {}),
+        ...(channel ? { channel } : {}),
       }
     );
     if (minIdeVersion && submission.min_ide_version !== minIdeVersion) {

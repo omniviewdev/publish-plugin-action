@@ -74,3 +74,12 @@ test('preserves API validation errors', async () => {
     );
   }, 400);
 });
+
+test('includes a non-empty release channel', async () => {
+  await withMarketplace({ id: 'feature' }, async (api, requests) => {
+    await api.createSubmission('publisher', 'plugin', '0.9.1-feature-abc.7.1', '', 'feature-abc');
+    assert.deepEqual(requests[0].body, {
+      plugin_id: 'plugin', version: '0.9.1-feature-abc.7.1', channel: 'feature-abc',
+    });
+  });
+});
