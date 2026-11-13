@@ -1,0 +1,32 @@
+name: Resolve release channel
+description: Resolve a promoted feature branch and its release version
+inputs:
+  kind:
+    description: host or plugin
+    required: true
+  channels-url:
+    description: Channel index URL
+    required: true
+  compute-version:
+    description: Compute the version from reachable stable tags
+    default: 'true'
+outputs:
+  enabled:
+    description: Whether the channel is active
+    value: ${{ steps.resolve.outputs.enabled }}
+  channel:
+    description: Release channel ID
+    value: ${{ steps.resolve.outputs.channel }}
+  version:
+    description: Release version
+    value: ${{ steps.resolve.outputs.version }}
+runs:
+  using: composite
+  steps:
+    - id: resolve
+      shell: bash
+      env:
+        CHANNEL_KIND: ${{ inputs.kind }}
+        CHANNELS_URL: ${{ inputs.channels-url }}
+        COMPUTE_VERSION: ${{ inputs.compute-version }}
+      run: bash "$GITHUB_ACTION_PATH/resolve.sh"
