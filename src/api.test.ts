@@ -58,7 +58,7 @@ for (const persisted of [undefined, null, '', '0.10.0']) {
     await withMarketplace({ data: { id: 'unsafe', min_ide_version: persisted } }, async (api, requests) => {
       await assert.rejects(async () => {
         const submission = await api.createSubmission('publisher', 'plugin', '0.9.0', '0.11.0');
-        await api.generateUploadUrls(submission.id, ['linux_amd64']);
+        await api.initMultipart(submission.id, 'linux_amd64', 1);
         await api.submitForReview(submission.id);
       }, /did not persist the requested min-ide-version; publishing stopped before artifact upload/);
       assert.equal(requests.length, 1, 'must not generate upload URLs or submit for review');
@@ -81,5 +81,22 @@ test('includes a non-empty release channel', async () => {
     assert.deepEqual(requests[0].body, {
       plugin_id: 'plugin', version: '0.9.1-feature-abc.7.1', channel: 'feature-abc',
     });
+  });
+});
+
+test('uses multipart marketplace endpoints and preserves part ETags', async () => {
+  await withMarketplace({ data: { upload_id: 'upload', part_urls: ['https://storage.example/part'] } }, async (api, requests) => {
+    assert.deepEqual(await api.initMultipart('submission', 'linux_amd64', 1), {
+      upload_id: 'upload', part_urls: ['https://storage.example/part'],
+    });
+    await api.completeMultipart('submission', 'linux_amd64', 'upload', [{ part_number: 1, etag: '"etag"' }]);
+    await api.abortMultipart('submission', 'linux_amd64', 'upload');
+    assert.deepEqual(requests, [
+      { path: '/v1/submissions/submission/multipart/init', body: { architecture: 'linux_amd64', part_count: 1 } },
+      { path: '/v1/submissions/submission/multipart/complete', body: {
+        architecture: 'linux_amd64', upload_id: 'upload', parts: [{ part_number: 1, etag: '"etag"' }],
+      } },
+      { path: '/v1/submissions/submission/multipart/abort', body: { architecture: 'linux_amd64', upload_id: 'upload' } },
+    ]);
   });
 });

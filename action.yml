@@ -23,7 +23,7 @@ inputs:
     description: 'Minimum compatible Omniview version, inclusive (e.g., 0.11.0). Requires a marketplace server that persists and enforces min_ide_version; publishing fails before upload if the server does not confirm it. Empty preserves legacy behavior.'
     required: false
   artifact-path:
-    description: 'Path to directory containing built artifacts'
+    description: 'Path to directory containing built artifacts. Files are uploaded sequentially in 64 MiB multipart requests; the marketplace must support multipart uploads.'
     required: true
   architectures:
     description: 'Comma-separated architectures (e.g., darwin_arm64,linux_amd64)'
