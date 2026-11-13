@@ -56,12 +56,21 @@ export class MarketplaceAPI {
     return submission;
   }
 
-  async generateUploadUrls(
-    submissionId: string,
-    architectures: string[]
-  ): Promise<{ urls: Record<string, string> }> {
-    return this.request('POST', `/v1/submissions/${submissionId}/upload-urls`, {
-      architectures,
+  async initMultipart(submissionId: string, architecture: string, partCount: number): Promise<{ upload_id: string; part_urls: string[] }> {
+    return this.request('POST', `/v1/submissions/${submissionId}/multipart/init`, {
+      architecture, part_count: partCount,
+    });
+  }
+
+  async completeMultipart(submissionId: string, architecture: string, uploadId: string, parts: { part_number: number; etag: string }[]): Promise<void> {
+    await this.request('POST', `/v1/submissions/${submissionId}/multipart/complete`, {
+      architecture, upload_id: uploadId, parts,
+    });
+  }
+
+  async abortMultipart(submissionId: string, architecture: string, uploadId: string): Promise<void> {
+    await this.request('POST', `/v1/submissions/${submissionId}/multipart/abort`, {
+      architecture, upload_id: uploadId,
     });
   }
 

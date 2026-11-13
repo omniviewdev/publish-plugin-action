@@ -44,29 +44,16 @@ async function run(): Promise<void> {
     core.setOutput('submission-id', submissionId);
     core.info(`  Submission created: ${submissionId}`);
 
-    // Step 2: Generate upload URLs
-    core.info(`Generating upload URLs for ${architectures.join(', ')}...`);
-    const { urls } = await api.generateUploadUrls(submissionId, architectures);
-    // Log URL hosts for debugging (not the full signed URLs)
-    for (const [arch, url] of Object.entries(urls)) {
-      try {
-        const parsed = new URL(url);
-        core.info(`  ${arch}: ${parsed.protocol}//${parsed.host}${parsed.pathname.substring(0, 50)}...`);
-      } catch {
-        core.warning(`  ${arch}: invalid URL returned`);
-      }
-    }
-
-    // Step 3: Upload artifacts
+    // Step 2: Upload artifacts using bounded multipart requests
     core.info('Uploading artifacts...');
-    await uploadArtifacts(artifactPath, pluginId, urls);
+    await uploadArtifacts(artifactPath, pluginId, architectures, api, submissionId);
 
-    // Step 4: Submit for review
+    // Step 3: Submit for review
     core.info('Submitting for review...');
     const result = await api.submitForReview(submissionId);
     core.info(`  Submission status: ${result.status}`);
 
-    // Step 5: Optionally poll for approval
+    // Step 4: Optionally poll for approval
     if (waitForApproval) {
       const finalStatus = await pollForApproval(api, submissionId, pollTimeout);
       core.setOutput('status', finalStatus);
